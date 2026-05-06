@@ -1,0 +1,17 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name }}
+  title: ${{ values.name }}
+  description: ${{ values.description }}
+  tags:
+    - vcreatek
+    - ${{ values.serviceType }}
+  annotations:
+    github.com/project-slug: ${{ values.repoUrl | parseRepoUrl | pick('owner') }}/${{ values.name }}
+    backstage.io/techdocs-ref: dir:.
+spec:
+  type: ${{ values.serviceType }}
+  lifecycle: ${{ values.lifecycle }}
+  owner: ${{ values.owner }}
+  system: vcreatek-eep

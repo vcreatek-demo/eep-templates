@@ -1,0 +1,8 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: vcreatek-golden-path-templates
+  description: vCreatek Engineering Excellence Platform — Golden Path Templates
+spec:
+  targets:
+    - ./templates/vcreatek-service/template.yaml
