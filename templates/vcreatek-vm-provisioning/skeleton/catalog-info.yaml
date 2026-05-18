@@ -1,0 +1,20 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ${{ values.vm_name }}
+  title: ${{ values.vm_name }}
+  description: ${{ values.vm_description }}
+  tags:
+    - vm
+    - proxmox
+    - ${{ values.environment }}
+  annotations:
+    vcreatek.io/vm-environment: ${{ values.environment }}
+    vcreatek.io/vm-user: ${{ values.vm_user }}
+    vcreatek.io/provisioned-by: eep
+    vcreatek.io/owner-team: ${{ values.owner_name }}
+spec:
+  type: vm
+  lifecycle: ${{ values.environment }}
+  owner: ${{ values.owner }}
+  system: vcreatek-eep

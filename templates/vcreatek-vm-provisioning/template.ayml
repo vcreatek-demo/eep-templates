@@ -1,0 +1,222 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: vcreatek-vm-provisioning
+  title: vCreatek VM Provisioning
+  description: >
+    Provisions a virtual machine on vCreatek's on-prem Proxmox server.
+    Development VMs are created automatically — no approval needed.
+    IP address is assigned automatically from the EEP range 10.10.1.100-199.
+    All provisioning is tracked in GitHub and Terraform Cloud.
+  tags:
+    - infrastructure
+    - vm
+    - proxmox
+    - terraform
+    - self-service
+spec:
+  owner: group:devops-team
+  type: infrastructure
+
+  parameters:
+    - title: VM Details
+      required:
+        - vm_name
+        - vm_description
+        - owner
+      properties:
+        vm_name:
+          title: VM Name
+          type: string
+          description: >
+            Unique name for this VM.
+            Lowercase letters, numbers and hyphens only.
+            Example: pilot-project-a-vm
+          pattern: '^[a-z0-9-]+$'
+          ui:autofocus: true
+
+        vm_description:
+          title: Purpose
+          type: string
+          description: What is this VM for? Be specific.
+          ui:widget: textarea
+
+        owner:
+          title: Owner Team
+          type: string
+          description: Which vCreatek team owns this VM?
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: Group
+
+        environment:
+          title: Environment
+          type: string
+          description: >
+            Development VMs are created automatically.
+            Staging and Production require IT team approval (Phase 2).
+          default: development
+          enum:
+            - development
+          enumNames:
+            - Development (auto-approved)
+
+    - title: VM Resources
+      properties:
+        vm_cores:
+          title: CPU Cores
+          type: number
+          description: Number of CPU cores
+          default: 2
+          enum: [2, 4]
+          enumNames:
+            - 2 cores
+            - 4 cores
+
+        vm_memory:
+          title: RAM
+          type: number
+          description: Memory in MB
+          default: 2048
+          enum: [2048, 4096, 8192]
+          enumNames:
+            - 2 GB
+            - 4 GB
+            - 8 GB
+
+        vm_disk_size:
+          title: Disk Size (GB)
+          type: number
+          description: Storage in GB
+          default: 20
+          enum: [20, 50, 100]
+          enumNames:
+            - 20 GB
+            - 50 GB
+            - 100 GB
+
+    - title: VM Access
+      required:
+        - vm_user
+        - vm_password
+      properties:
+        vm_user:
+          title: Linux Username
+          type: string
+          description: Username to create inside the VM
+          default: vcreatek
+          pattern: '^[a-z][a-z0-9-]*$'
+
+        vm_password:
+          title: Login Password
+          type: string
+          description: Password for SSH and console access. Minimum 8 characters.
+          ui:widget: password
+          minLength: 8
+
+  steps:
+    - id: log-start
+      name: Starting VM provisioning
+      action: debug:log
+      input:
+        message: >
+          Provisioning VM ${{ parameters.vm_name }}
+          for ${{ parameters.owner }}
+          in ${{ parameters.environment }}
+
+    - id: fetch-template
+      name: Generating Terraform files
+      action: fetch:template
+      input:
+        url: ./skeleton
+        targetPath: ./output
+        values:
+          vm_name:        ${{ parameters.vm_name }}
+          vm_description: ${{ parameters.vm_description }}
+          owner:          ${{ parameters.owner }}
+          owner_name:     ${{ parameters.owner | parseEntityRef | pick('name') }}
+          environment:    ${{ parameters.environment }}
+          vm_cores:       ${{ parameters.vm_cores }}
+          vm_memory:      ${{ parameters.vm_memory }}
+          vm_disk_size:   ${{ parameters.vm_disk_size }}
+          vm_user:        ${{ parameters.vm_user }}
+          vm_password:    ${{ parameters.vm_password }}
+
+    - id: publish
+      name: Committing to vcreatek-infrastructure
+      action: publish:github
+      input:
+        allowedHosts: ['github.com']
+        description: "EEP VM provisioning — ${{ parameters.vm_name }}"
+        repoUrl: github.com?owner=vcreatek-demo&repo=vcreatek-infrastructure
+        repoVisibility: private
+        defaultBranch: main
+        protectDefaultBranch: false
+        gitCommitMessage: "feat: provision ${{ parameters.vm_name }} for ${{ parameters.owner | parseEntityRef | pick('name') }}"
+        sourcePath: ./output
+        targetPath: "teams/${{ parameters.owner | parseEntityRef | pick('name') }}/${{ parameters.vm_name }}"
+
+    - id: notify
+      name: Notifying IT team
+      action: notification:send
+      input:
+        recipients:
+          users:
+            - default/ashif-ali
+        title: "🖥️ New VM Provisioned — ${{ parameters.vm_name }}"
+        message: |
+          A new development VM has been provisioned via EEP.
+
+          VM Name:     ${{ parameters.vm_name }}
+          Purpose:     ${{ parameters.vm_description }}
+          Owner Team:  ${{ parameters.owner }}
+          Environment: ${{ parameters.environment }}
+          CPU:         ${{ parameters.vm_cores }} cores
+          RAM:         ${{ parameters.vm_memory }} MB
+          Disk:        ${{ parameters.vm_disk_size }} GB
+          User:        ${{ parameters.vm_user }}
+
+          Terraform is now running. VM will be ready in approximately 2 minutes.
+          Track progress in GitHub Actions.
+
+    - id: register
+      name: Registering in EEP catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: "/catalog-info.yaml"
+        optional: true
+
+  output:
+    links:
+      - title: View in GitHub
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: View in Catalog
+        url: ${{ steps['register'].output.entityRef }}
+      - title: Track Provisioning
+        url: https://github.com/vcreatek-demo/vcreatek-infrastructure/actions
+    text:
+      - title: VM Provisioning Started
+        content: |
+          ## ✅ VM request submitted successfully
+
+          | Field | Value |
+          |---|---|
+          | VM Name | `${{ parameters.vm_name }}` |
+          | Owner | ${{ parameters.owner }} |
+          | Environment | ${{ parameters.environment }} |
+          | CPU | ${{ parameters.vm_cores }} cores |
+          | RAM | ${{ parameters.vm_memory }} MB |
+          | Disk | ${{ parameters.vm_disk_size }} GB |
+
+          ## What happens next
+
+          1. GitHub Actions has been triggered automatically
+          2. IP address is being assigned from the EEP range
+          3. Terraform is provisioning your VM on Proxmox
+          4. **VM will be ready in approximately 2 minutes**
+
+          ## Connecting to your VM
+
+          Once provisioning completes, SSH in using:
