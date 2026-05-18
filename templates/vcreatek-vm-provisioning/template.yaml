@@ -124,13 +124,12 @@ spec:
           Provisioning VM ${{ parameters.vm_name }}
           for ${{ parameters.owner }}
           in ${{ parameters.environment }}
-
     - id: fetch-template
       name: Generating Terraform files
       action: fetch:template
       input:
         url: ./skeleton
-        targetPath: ./output
+        targetPath: ./output/teams/${{ parameters.owner | parseEntityRef | pick('name') }}/${{ parameters.vm_name }}
         values:
           vm_name:        ${{ parameters.vm_name }}
           vm_description: ${{ parameters.vm_description }}
@@ -142,12 +141,10 @@ spec:
           vm_disk_size:   ${{ parameters.vm_disk_size }}
           vm_user:        ${{ parameters.vm_user }}
           vm_password:    ${{ parameters.vm_password }}
-
     - id: publish
       name: Committing to vcreatek-infrastructure
       action: publish:github
       input:
-        allowedHosts: ['github.com']
         description: "EEP VM provisioning — ${{ parameters.vm_name }}"
         repoUrl: github.com?owner=vcreatek-demo&repo=vcreatek-infrastructure
         repoVisibility: private
@@ -155,8 +152,7 @@ spec:
         protectDefaultBranch: false
         gitCommitMessage: "feat: provision ${{ parameters.vm_name }} for ${{ parameters.owner | parseEntityRef | pick('name') }}"
         sourcePath: ./output
-        targetPath: "teams/${{ parameters.owner | parseEntityRef | pick('name') }}/${{ parameters.vm_name }}"
-
+        update: true
     - id: notify
       name: Notifying IT team
       action: notification:send
