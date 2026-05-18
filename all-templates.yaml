@@ -6,3 +6,4 @@ metadata:
 spec:
   targets:
     - ./templates/vcreatek-service/template.yaml
+    - ./templates/vcreatek-vm-provisioning/template.yaml
