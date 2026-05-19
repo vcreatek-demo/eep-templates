@@ -168,7 +168,7 @@ spec:
 
           *Provisioned by vCreatek EEP*
         sourcePath: ./output
-        gitCommitMessage: "feat: provision ${{ parameters.vm_name }}"
+        
     - id: notify
       name: Notifying IT team
       action: notification:send
