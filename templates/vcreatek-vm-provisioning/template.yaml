@@ -141,15 +141,34 @@ spec:
           vm_disk_size:   ${{ parameters.vm_disk_size }}
           vm_user:        ${{ parameters.vm_user }}
           vm_password:    ${{ parameters.vm_password }}
+
     - id: publish
       name: Committing to vcreatek-infrastructure
-      action: github:repo:push
+      action: publish:github:pull-request
       input:
         repoUrl: github.com?owner=vcreatek-demo&repo=vcreatek-infrastructure
-        defaultBranch: main
-        gitCommitMessage: "feat: provision ${{ parameters.vm_name }} for ${{ parameters.owner | parseEntityRef | pick('name') }}"
+        title: "feat: provision ${{ parameters.vm_name }} for ${{ parameters.owner | parseEntityRef | pick('name') }}"
+        branchName: "eep/provision-${{ parameters.vm_name }}"
+        description: |
+          ## New VM Request — ${{ parameters.vm_name }}
+
+          | Field | Value |
+          |---|---|
+          | VM Name | `${{ parameters.vm_name }}` |
+          | Purpose | ${{ parameters.vm_description }} |
+          | Owner | ${{ parameters.owner }} |
+          | Environment | ${{ parameters.environment }} |
+          | CPU | ${{ parameters.vm_cores }} cores |
+          | RAM | ${{ parameters.vm_memory }} MB |
+          | Disk | ${{ parameters.vm_disk_size }} GB |
+          | User | ${{ parameters.vm_user }} |
+
+          ## What happens when merged
+          GitHub Actions triggers → Terraform provisions VM → Ready in 2 minutes
+
+          *Provisioned by vCreatek EEP*
         sourcePath: ./output
-        force: true
+        gitCommitMessage: "feat: provision ${{ parameters.vm_name }}"
     - id: notify
       name: Notifying IT team
       action: notification:send
@@ -173,20 +192,38 @@ spec:
           Terraform is now running. VM will be ready in approximately 2 minutes.
           Track progress in GitHub Actions.
 
-    - id: register
-      name: Registering in EEP catalog
-      action: catalog:register
-      input:
-        repoContentsUrl: https://github.com/vcreatek-demo/vcreatek-infrastructure/blob/main
-        catalogInfoPath: "/teams/${{ parameters.owner | parseEntityRef | pick('name') }}/${{ parameters.vm_name }}/catalog-info.yaml"
-        optional: true
+    #- id: register
+     #name: Registering in EEP catalog
+      #action: catalog:register
+      #input:
+        #repoContentsUrl: https://github.com/vcreatek-demo/vcreatek-infrastructure/blob/main
+        #catalogInfoPath: "/teams/${{ parameters.owner | parseEntityRef | pick('name') }}/${{ parameters.vm_name }}/catalog-info.yaml"
+        #optional: true
 
   output:
     links:
-      - title: View in GitHub
-        url: https://github.com/vcreatek-demo/vcreatek-infrastructure/tree/main/teams/${{ parameters.owner | parseEntityRef | pick('name') }}/${{ parameters.vm_name }}
+      - title: View Pull Request
+        url: ${{ steps['publish'].output.remoteUrl }}
       - title: Track Provisioning
         url: https://github.com/vcreatek-demo/vcreatek-infrastructure/actions
+    text:
+      - title: VM Provisioning Started
+        content: |
+          ## ✅ VM request submitted
+
+          | Field | Value |
+          |---|---|
+          | VM Name | `${{ parameters.vm_name }}` |
+          | Owner | ${{ parameters.owner }} |
+          | Environment | ${{ parameters.environment }} |
+
+          ## What happens next
+          1. Review and merge the PR in GitHub
+          2. GitHub Actions triggers automatically
+          3. IP assigned from EEP range
+          4. VM ready in approximately 2 minutes
+
+          👉 ${{ steps['publish'].output.remoteUrl }}
     text:
       - title: VM Provisioning Started
         content: |
