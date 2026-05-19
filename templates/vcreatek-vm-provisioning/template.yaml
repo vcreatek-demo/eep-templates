@@ -224,27 +224,4 @@ spec:
           4. VM ready in approximately 2 minutes
 
           👉 ${{ steps['publish'].output.remoteUrl }}
-    text:
-      - title: VM Provisioning Started
-        content: |
-          ## ✅ VM request submitted successfully
-
-          | Field | Value |
-          |---|---|
-          | VM Name | `${{ parameters.vm_name }}` |
-          | Owner | ${{ parameters.owner }} |
-          | Environment | ${{ parameters.environment }} |
-          | CPU | ${{ parameters.vm_cores }} cores |
-          | RAM | ${{ parameters.vm_memory }} MB |
-          | Disk | ${{ parameters.vm_disk_size }} GB |
-
-          ## What happens next
-
-          1. GitHub Actions has been triggered automatically
-          2. IP address is being assigned from the EEP range
-          3. Terraform is provisioning your VM on Proxmox
-          4. **VM will be ready in approximately 2 minutes**
-
-          ## Connecting to your VM
-
-          Once provisioning completes, SSH in using:
+    
