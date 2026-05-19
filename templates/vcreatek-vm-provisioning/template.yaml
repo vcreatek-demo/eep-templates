@@ -149,6 +149,7 @@ spec:
         defaultBranch: main
         gitCommitMessage: "feat: provision ${{ parameters.vm_name }} for ${{ parameters.owner | parseEntityRef | pick('name') }}"
         sourcePath: ./output
+        force: true
     - id: notify
       name: Notifying IT team
       action: notification:send
