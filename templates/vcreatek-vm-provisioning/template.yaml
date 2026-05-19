@@ -143,13 +143,10 @@ spec:
           vm_password:    ${{ parameters.vm_password }}
     - id: publish
       name: Committing to vcreatek-infrastructure
-      action: publish:github
+      action: github:repo:push
       input:
-        description: "EEP VM provisioning — ${{ parameters.vm_name }}"
         repoUrl: github.com?owner=vcreatek-demo&repo=vcreatek-infrastructure
-        repoVisibility: private
         defaultBranch: main
-        protectDefaultBranch: false
         gitCommitMessage: "feat: provision ${{ parameters.vm_name }} for ${{ parameters.owner | parseEntityRef | pick('name') }}"
         sourcePath: ./output
     - id: notify
@@ -179,16 +176,14 @@ spec:
       name: Registering in EEP catalog
       action: catalog:register
       input:
-        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
-        catalogInfoPath: "/catalog-info.yaml"
+        repoContentsUrl: https://github.com/vcreatek-demo/vcreatek-infrastructure/blob/main
+        catalogInfoPath: "/teams/${{ parameters.owner | parseEntityRef | pick('name') }}/${{ parameters.vm_name }}/catalog-info.yaml"
         optional: true
 
   output:
     links:
       - title: View in GitHub
-        url: ${{ steps['publish'].output.remoteUrl }}
-      - title: View in Catalog
-        url: ${{ steps['register'].output.entityRef }}
+        url: https://github.com/vcreatek-demo/vcreatek-infrastructure/tree/main/teams/${{ parameters.owner | parseEntityRef | pick('name') }}/${{ parameters.vm_name }}
       - title: Track Provisioning
         url: https://github.com/vcreatek-demo/vcreatek-infrastructure/actions
     text:
