@@ -5,10 +5,12 @@
 module "vm" {
   source = "../../../../modules/vcreatek-vm"
 
+  # Proxmox connection — from GitHub Secrets
   proxmox_api_url      = "https://10.10.1.63:8006/api2/json"
   proxmox_token_id     = var.proxmox_token_id
   proxmox_token_secret = var.proxmox_token_secret
 
+  # VM configuration — from terraform.tfvars
   vm_name        = var.vm_name
   vm_description = var.vm_description
   owner_team     = var.owner_team
@@ -21,19 +23,27 @@ module "vm" {
   vm_password    = var.vm_password
 }
 
-variable "proxmox_token_id"     { sensitive = true }
-variable "proxmox_token_secret" { sensitive = true }
-variable "vm_password"          { sensitive = true }
-variable "vm_ip"                {}
-variable "vm_name"              {}
-variable "vm_description"       {}
-variable "owner_team"           {}
-variable "environment"          { default = "development" }
-variable "vm_cores"             { default = 2 }
-variable "vm_memory"            { default = 2048 }
-variable "vm_disk_size"         { default = 20 }
-variable "vm_user"              { default = "vcreatek" }
+# ── Variable Declarations ─────────────────────────────────────────
+variable "proxmox_token_id" {
+  sensitive = true
+}
+variable "proxmox_token_secret" {
+  sensitive = true
+}
+variable "vm_password" {
+  sensitive = true
+}
+variable "vm_ip"          {}
+variable "vm_name"        {}
+variable "vm_description" {}
+variable "owner_team"     {}
+variable "environment"    { default = "development" }
+variable "vm_cores"       { default = 2 }
+variable "vm_memory"      { default = 2048 }
+variable "vm_disk_size"   { default = 20 }
+variable "vm_user"        { default = "vcreatek" }
 
+# ── Outputs ───────────────────────────────────────────────────────
 output "ssh_command" { value = module.vm.ssh_command }
 output "vm_ip"       { value = module.vm.vm_ip }
 output "vm_id"       { value = module.vm.vm_id }
