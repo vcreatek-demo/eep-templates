@@ -169,28 +169,6 @@ spec:
           *Provisioned by vCreatek EEP*
         sourcePath: ./output
         
-    - id: notify
-      name: Notifying IT team
-      action: notification:send
-      input:
-        recipients:
-          users:
-            - default/ashif-ali
-        title: "🖥️ New VM Provisioned — ${{ parameters.vm_name }}"
-        message: |
-          A new development VM has been provisioned via EEP.
-
-          VM Name:     ${{ parameters.vm_name }}
-          Purpose:     ${{ parameters.vm_description }}
-          Owner Team:  ${{ parameters.owner }}
-          Environment: ${{ parameters.environment }}
-          CPU:         ${{ parameters.vm_cores }} cores
-          RAM:         ${{ parameters.vm_memory }} MB
-          Disk:        ${{ parameters.vm_disk_size }} GB
-          User:        ${{ parameters.vm_user }}
-
-          Terraform is now running. VM will be ready in approximately 2 minutes.
-          Track progress in GitHub Actions.
 
     #- id: register
      #name: Registering in EEP catalog
