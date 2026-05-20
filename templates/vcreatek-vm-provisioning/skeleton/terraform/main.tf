@@ -3,7 +3,7 @@
 # Do not edit manually — use EEP to update
 
 module "vm" {
-  source = "../../../modules/vcreatek-vm"
+  source = "git::https://github.com/vcreatek-demo/vcreatek-infrastructure.git//modules/vcreatek-vm?ref=main"
 
   proxmox_api_url      = "https://10.10.1.63:8006/api2/json"
   proxmox_token_id     = var.proxmox_token_id
