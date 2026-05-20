@@ -10,8 +10,3 @@ vm_cores       = ${{ values.vm_cores }}
 vm_memory      = ${{ values.vm_memory }}
 vm_disk_size   = ${{ values.vm_disk_size }}
 vm_user        = "${{ values.vm_user }}"
-
-# vm_ip          — assigned automatically by GitHub Actions IP registry
-# vm_password    — passed via GitHub Secret TF_VAR_vm_password
-# proxmox_token_id     — passed via GitHub Secret PROXMOX_TOKEN_ID
-# proxmox_token_secret — passed via GitHub Secret PROXMOX_TOKEN_SECRET
