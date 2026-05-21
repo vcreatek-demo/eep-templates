@@ -95,11 +95,7 @@ spec:
             - 20 GB
             - 50 GB
             - 100 GB
-
     - title: VM Access
-      required:
-        - vm_user
-        - vm_password
       properties:
         vm_user:
           title: Linux Username
@@ -107,13 +103,6 @@ spec:
           description: Username to create inside the VM
           default: vcreatek
           pattern: '^[a-z][a-z0-9-]*$'
-
-        vm_password:
-          title: Login Password
-          type: string
-          description: Password for SSH and console access. Minimum 8 characters.
-          ui:widget: password
-          minLength: 8
 
   steps:
     - id: log-start
@@ -140,7 +129,6 @@ spec:
           vm_memory:      ${{ parameters.vm_memory }}
           vm_disk_size:   ${{ parameters.vm_disk_size }}
           vm_user:        ${{ parameters.vm_user }}
-          vm_password:    ${{ parameters.vm_password }}
 
     - id: publish
       name: Committing to vcreatek-infrastructure
@@ -177,7 +165,6 @@ spec:
         #repoContentsUrl: https://github.com/vcreatek-demo/vcreatek-infrastructure/blob/main
         #catalogInfoPath: "/teams/${{ parameters.owner | parseEntityRef | pick('name') }}/${{ parameters.vm_name }}/catalog-info.yaml"
         #optional: true
-
   output:
     links:
       - title: View Pull Request
@@ -194,12 +181,17 @@ spec:
           | VM Name | `${{ parameters.vm_name }}` |
           | Owner | ${{ parameters.owner }} |
           | Environment | ${{ parameters.environment }} |
+          | CPU | ${{ parameters.vm_cores }} cores |
+          | RAM | ${{ parameters.vm_memory }} MB |
+          | Disk | ${{ parameters.vm_disk_size }} GB |
+          | Username | ${{ parameters.vm_user }} |
 
           ## What happens next
           1. Review and merge the PR in GitHub
-          2. GitHub Actions triggers automatically
-          3. IP assigned from EEP range
-          4. VM ready in approximately 2 minutes
+          2. GitHub Actions runs automatically
+          3. IP assigned and VM created in ~2 minutes
 
-          👉 ${{ steps['publish'].output.remoteUrl }}
+          ## First Login
+          Your VM will be ready with a default password.
+          **Change it immediately after first login:**
     
