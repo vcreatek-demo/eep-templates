@@ -1,0 +1,20 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.project_name }}
+  title: ${{ values.project_title }}
+  description: ${{ values.project_description }}
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: vcreatek-demo/${{ values.project_name }}-docs
+    vcreatek.io/client: ${{ values.client_name }}
+    vcreatek.io/project-type: client-engagement
+  tags:
+    - client-project
+    - documentation
+    - ${{ values.lifecycle }}
+spec:
+  type: documentation
+  lifecycle: ${{ values.lifecycle }}
+  owner: ${{ values.owner }}
+  system: vcreatek-eep

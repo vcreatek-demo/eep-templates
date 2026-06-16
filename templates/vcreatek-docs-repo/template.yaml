@@ -1,0 +1,171 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: vcreatek-docs-repo
+  title: vCreatek Documentation Repository
+  description: >
+    Creates a documentation-only repository for projects where code
+    lives in a client environment. The project appears in the EEP
+    catalog with full TechDocs support — architecture, runbooks,
+    decisions, and handover notes all in one place.
+  tags:
+    - documentation
+    - client-project
+    - techdocs
+spec:
+  owner: group:default/devops-team
+  type: documentation
+
+  parameters:
+    - title: Project Details
+      required:
+        - project_name
+        - project_description
+        - owner
+        - client_name
+      properties:
+        project_name:
+          title: Project Name
+          type: string
+          description: >
+            Short name for this project.
+            Lowercase letters, numbers and hyphens only.
+            Example: acme-data-platform
+          pattern: '^[a-z0-9-]+$'
+          ui:autofocus: true
+
+        project_title:
+          title: Project Title
+          type: string
+          description: Human readable project name
+          ui:help: 'Example: ACME Data Platform'
+
+        project_description:
+          title: Project Description
+          type: string
+          description: What this project does — one or two sentences
+          ui:widget: textarea
+
+        client_name:
+          title: Client Name
+          type: string
+          description: Name of the client this project is for
+          ui:help: 'Example: ACME Corporation'
+
+        owner:
+          title: Owner Team
+          type: string
+          description: Which vCreatek team owns this project
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: Group
+
+        lifecycle:
+          title: Project Status
+          type: string
+          description: Current status of this project
+          default: active
+          enum:
+            - active
+            - completed
+            - on-hold
+          enumNames:
+            - Active — currently in delivery
+            - Completed — delivered to client
+            - On Hold — paused
+
+    - title: Repository
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+            allowedOwners:
+              - vcreatek-demo
+
+  steps:
+    - id: log-start
+      name: Creating documentation repository
+      action: debug:log
+      input:
+        message: >
+          Creating docs repo for ${{ parameters.project_name }}
+          Client: ${{ parameters.client_name }}
+          Owner: ${{ parameters.owner }}
+
+    - id: fetch-template
+      name: Generating documentation structure
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          project_name:        ${{ parameters.project_name }}
+          project_title:       ${{ parameters.project_title or parameters.project_name }}
+          project_description: ${{ parameters.project_description }}
+          client_name:         ${{ parameters.client_name }}
+          owner:               ${{ parameters.owner }}
+          owner_name:          ${{ parameters.owner | parseEntityRef | pick('name') }}
+          lifecycle:           ${{ parameters.lifecycle }}
+
+    - id: publish
+      name: Creating GitHub repository
+      action: publish:github
+      input:
+        allowedHosts: ['github.com']
+        description: "${{ parameters.project_title }} — vCreatek project documentation"
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: private
+        defaultBranch: main
+        gitCommitMessage: "feat: initial documentation structure for ${{ parameters.project_name }}"
+        topics:
+          - vcreatek
+          - documentation
+          - client-project
+
+    - id: register
+      name: Registering in EEP catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: "/catalog-info.yaml"
+
+  output:
+    links:
+      - title: View Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: View in EEP Catalog
+        url: ${{ steps['register'].output.entityRef }}
+    text:
+      - title: Documentation Repository Created
+        content: |
+          ## ✅ Documentation repository created
+
+          | Field | Value |
+          |---|---|
+          | Project | ${{ parameters.project_title }} |
+          | Client | ${{ parameters.client_name }} |
+          | Owner | ${{ parameters.owner }} |
+          | Status | ${{ parameters.lifecycle }} |
+
+          ## What was created
+
+          Your repository includes:
+          - `docs/index.md` — project overview (edit this first)
+          - `docs/architecture.md` — system architecture
+          - `docs/runbook/` — operations runbook
+          - `docs/decisions/` — architecture decisions
+          - `docs/handover/` — client handover notes
+
+          ## Next Steps
+
+          1. Clone the repo and start writing documentation
+          2. Find your project in EEP catalog
+          3. Click the Docs tab to see your documentation
+
+          👉 ${{ steps['publish'].output.remoteUrl }}

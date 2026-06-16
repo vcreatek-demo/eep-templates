@@ -1,0 +1,15 @@
+site_name: ${{ values.project_title }}
+site_description: ${{ values.project_description }}
+
+nav:
+  - Overview: index.md
+  - Architecture: architecture.md
+  - Runbook:
+    - Overview: runbook/index.md
+  - Architecture Decisions:
+    - Overview: decisions/index.md
+  - Handover:
+    - Overview: handover/index.md
+
+plugins:
+  - techdocs-core
