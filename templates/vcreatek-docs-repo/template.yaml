@@ -117,7 +117,6 @@ spec:
       name: Creating GitHub repository
       action: publish:github
       input:
-        allowedHosts: ['github.com']
         description: "${{ parameters.project_title }} — vCreatek project documentation"
         repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: private
