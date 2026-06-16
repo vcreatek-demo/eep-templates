@@ -7,3 +7,4 @@ spec:
   targets:
     - ./templates/vcreatek-service/template.yaml
     - ./templates/vcreatek-vm-provisioning/template.yaml
+    - ./templates/vcreatek-docs-repo/template.yaml
